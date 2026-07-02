@@ -7,6 +7,6 @@ class KnowledgeStatus(BaseModel):
 
 
 class DocumentSearchRequest(BaseModel):
-    document_dir: str
+    document_id: str
     query: str
     top_k: int = 3

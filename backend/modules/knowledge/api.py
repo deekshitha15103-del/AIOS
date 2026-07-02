@@ -46,8 +46,10 @@ def get_documents():
 
 @router.post("/search", response_model=APIResponse)
 def search_knowledge(request: DocumentSearchRequest):
+    document_dir = f"data/documents/{request.document_id}"
+
     results = search_document(
-        document_dir=request.document_dir,
+        document_dir=document_dir,
         query=request.query,
         top_k=request.top_k,
     )

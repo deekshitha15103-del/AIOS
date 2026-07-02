@@ -24,7 +24,9 @@ def build_faiss_index(document: dict) -> dict:
         dtype="float32",
     )
 
-    index = faiss.IndexFlatL2(vectors.shape[1])
+    faiss.normalize_L2(vectors)
+
+    index = faiss.IndexFlatIP(vectors.shape[1])
     index.add(vectors)
 
     faiss.write_index(index, str(index_path))

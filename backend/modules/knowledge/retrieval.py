@@ -20,12 +20,13 @@ def search_document(document_dir: str, query: str, top_k: int = 3) -> list[dict]
     chunks = json.loads(chunks_path.read_text(encoding="utf-8"))
 
     query_vector = _model.encode([query]).astype("float32")
+    faiss.normalize_L2(query_vector)
 
-    distances, indices = index.search(query_vector, top_k)
+    scores, indices = index.search(query_vector, top_k)
 
     results = []
 
-    for distance, vector_index in zip(distances[0], indices[0]):
+    for score, vector_index in zip(scores[0], indices[0]):
         meta = metadata[vector_index]
         chunk = chunks[vector_index]
 
@@ -33,7 +34,7 @@ def search_document(document_dir: str, query: str, top_k: int = 3) -> list[dict]
             {
                 "chunk_id": meta["chunk_id"],
                 "document_id": meta["document_id"],
-                "score": float(distance),
+                "score": float(score),
                 "text": chunk["text"],
                 "chunk_index": chunk["chunk_index"],
             }
