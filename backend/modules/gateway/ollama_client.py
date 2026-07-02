@@ -1,0 +1,26 @@
+import json
+import urllib.request
+
+
+OLLAMA_URL = "http://localhost:11434/api/generate"
+MODEL_NAME = "llama3.2"
+
+
+def generate_answer(prompt: str) -> str:
+    payload = {
+        "model": MODEL_NAME,
+        "prompt": prompt,
+        "stream": False,
+    }
+
+    req = urllib.request.Request(
+        OLLAMA_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
+    with urllib.request.urlopen(req, timeout=300) as response:
+        result = json.loads(response.read().decode("utf-8"))
+
+    return result["response"]
