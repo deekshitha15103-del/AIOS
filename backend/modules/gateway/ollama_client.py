@@ -11,6 +11,10 @@ def generate_answer(prompt: str) -> str:
         "model": MODEL_NAME,
         "prompt": prompt,
         "stream": False,
+        "options": {
+            "temperature": 0.2,
+            "num_predict": 250
+        },
     }
 
     req = urllib.request.Request(
