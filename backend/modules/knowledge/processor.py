@@ -1,4 +1,5 @@
 from backend.core.logger import get_logger
+from backend.modules.knowledge.chunker import create_chunks
 from backend.modules.knowledge.ingestion import extract_pdf_text
 from backend.modules.knowledge.repository import update_document_status
 from backend.modules.knowledge.status import DocumentStatus
@@ -17,9 +18,11 @@ class DocumentProcessor:
         document["status"] = DocumentStatus.PROCESSING
 
         document = extract_pdf_text(document)
-
         update_document_status(document_id, DocumentStatus.TEXT_EXTRACTED)
 
-        logger.info(f"Text extracted for document: {document_id}")
+        document = create_chunks(document)
+        update_document_status(document_id, DocumentStatus.CHUNKED)
+
+        logger.info(f"Document chunked successfully: {document_id}")
 
         return document
