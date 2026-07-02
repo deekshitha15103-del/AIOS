@@ -1,8 +1,10 @@
 from backend.core.logger import get_logger
 from backend.modules.knowledge.chunker import create_chunks
+from backend.modules.knowledge.embedding import generate_embeddings
 from backend.modules.knowledge.ingestion import extract_pdf_text
 from backend.modules.knowledge.repository import update_document_status
 from backend.modules.knowledge.status import DocumentStatus
+from backend.modules.knowledge.vectorstore import build_faiss_index
 
 
 logger = get_logger(__name__)
@@ -23,6 +25,12 @@ class DocumentProcessor:
         document = create_chunks(document)
         update_document_status(document_id, DocumentStatus.CHUNKED)
 
-        logger.info(f"Document chunked successfully: {document_id}")
+        document = generate_embeddings(document)
+        update_document_status(document_id, DocumentStatus.EMBEDDED)
+
+        document = build_faiss_index(document)
+        update_document_status(document_id, DocumentStatus.INDEXED)
+
+        logger.info(f"FAISS index built for document: {document_id}")
 
         return document
