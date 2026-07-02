@@ -1,6 +1,21 @@
+# Virtual Environment
 venv/
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+
+# Environment
 .env
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime data
+data/aios.db
 data/uploads/
-data/*.db
+data/documents/
