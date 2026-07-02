@@ -1,7 +1,8 @@
 from fastapi import APIRouter, File, UploadFile
 
 from backend.modules.knowledge.repository import list_documents
-from backend.modules.knowledge.schemas import KnowledgeStatus
+from backend.modules.knowledge.retrieval import search_document
+from backend.modules.knowledge.schemas import DocumentSearchRequest, KnowledgeStatus
 from backend.modules.knowledge.service import upload_document
 from backend.schemas.common import APIResponse
 
@@ -40,4 +41,19 @@ def get_documents():
         success=True,
         message="Documents fetched successfully",
         data=documents,
+    )
+
+
+@router.post("/search", response_model=APIResponse)
+def search_knowledge(request: DocumentSearchRequest):
+    results = search_document(
+        document_dir=request.document_dir,
+        query=request.query,
+        top_k=request.top_k,
+    )
+
+    return APIResponse(
+        success=True,
+        message="Search completed successfully",
+        data=results,
     )
