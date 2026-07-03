@@ -1,8 +1,36 @@
 from pathlib import Path
+import re
 
 from pypdf import PdfReader
 
 from backend.modules.knowledge.status import DocumentStatus
+
+
+def clean_text(text: str) -> str:
+    """
+    Clean extracted PDF text before chunking.
+    """
+
+    # Remove excessive whitespace
+    text = re.sub(r"\s+", " ", text)
+
+    # Remove repeated page markers
+    text = re.sub(r"--- Page \d+ ---", "", text)
+
+    # Remove common footer/header noise
+    garbage_patterns = [
+        "Rationalised 2023-24",
+        "ACKNOWLEDGEMENTS",
+        "Contents",
+        "Bibliography",
+        "References",
+        "Index",
+    ]
+
+    for pattern in garbage_patterns:
+        text = text.replace(pattern, "")
+
+    return text.strip()
 
 
 def extract_pdf_text(document: dict) -> dict:
@@ -16,13 +44,24 @@ def extract_pdf_text(document: dict) -> dict:
 
     reader = PdfReader(str(file_path))
 
-    pages_text: list[str] = []
+    pages_text = []
 
     for page_number, page in enumerate(reader.pages, start=1):
-        text = page.extract_text() or ""
-        pages_text.append(f"\n\n--- Page {page_number} ---\n\n{text}")
 
-    full_text = "".join(pages_text)
+        text = page.extract_text() or ""
+
+        text = clean_text(text)
+
+        # Skip empty pages
+        if len(text) < 50:
+            continue
+
+        pages_text.append(
+            f"\n\n===== PAGE {page_number} =====\n\n{text}"
+        )
+
+    full_text = "\n".join(pages_text)
+
     output_path.write_text(full_text, encoding="utf-8")
 
     document["status"] = DocumentStatus.TEXT_EXTRACTED

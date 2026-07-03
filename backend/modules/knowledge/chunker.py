@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
@@ -9,6 +10,35 @@ from backend.modules.knowledge.status import DocumentStatus
 
 MIN_CHUNK_CHARACTERS = 300
 MAX_CHUNK_CHARACTERS = 1200
+
+BAD_CHUNK_KEYWORDS = [
+    "acknowledgements",
+    "bibliography",
+    "references",
+    "contents",
+    "rationalised 2023-24",
+]
+
+
+def is_low_quality_chunk(text: str) -> bool:
+    lowered = text.lower().strip()
+
+    if len(lowered) < 120:
+        return True
+
+    if any(keyword in lowered for keyword in BAD_CHUNK_KEYWORDS):
+        return True
+
+    question_marks = lowered.count("?")
+    word_count = len(lowered.split())
+
+    if question_marks >= 2 and word_count < 120:
+        return True
+
+    if re.fullmatch(r"[\d\s\W]+", lowered):
+        return True
+
+    return False
 
 
 def split_large_text(text: str) -> list[str]:
@@ -77,6 +107,7 @@ def create_chunks(document: dict) -> dict:
             raw_chunks.append(paragraph)
 
     raw_chunks = merge_small_chunks(raw_chunks)
+    raw_chunks = [chunk for chunk in raw_chunks if not is_low_quality_chunk(chunk)]
 
     chunk_records = []
     created_at = datetime.now(timezone.utc)
