@@ -1,21 +1,32 @@
-# Virtual Environment
-venv/
-
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
 
-# Environment
+# Virtual environment
+venv/
 .env
+
+# Data
+data/documents/
+data/sessions/
 
 # IDE
 .vscode/
+.idea/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Runtime data
-data/aios.db
-data/uploads/
-data/documents/
+# Logs
+*.log
+
+# Streamlit
+.streamlit/
+
+# Docker
+*.tar
+
+# Git
+.git/
