@@ -24,13 +24,11 @@ st.markdown(
     .block-container {
         padding-top: 2rem;
     }
-    .metric-card {
-        background-color: #111827;
-        padding: 16px;
-        border-radius: 14px;
-        border: 1px solid #374151;
-        margin-bottom: 12px;
+
+    [data-testid="stSidebar"] {
+        background-color: #0f172a;
     }
+
     .source-card {
         background-color: #0f172a;
         padding: 18px;
@@ -38,6 +36,7 @@ st.markdown(
         border: 1px solid #334155;
         margin-bottom: 16px;
     }
+
     .small-muted {
         color: #9ca3af;
         font-size: 0.9rem;
@@ -46,10 +45,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-
-
-st.title("🤖 AIOS Enterprise")
-st.caption("Production-style AI Knowledge Assistant with Hybrid Retrieval + Source Grounding")
 
 
 if "session_id" not in st.session_state:
@@ -66,7 +61,10 @@ if "messages" not in st.session_state:
 
 
 with st.sidebar:
-    st.header("📁 Workspace")
+    st.title("🤖 AIOS")
+    st.caption("Enterprise Knowledge Assistant")
+
+    st.divider()
 
     st.markdown("### 📄 Upload Document")
 
@@ -94,22 +92,15 @@ with st.sidebar:
 
         if response.status_code == 200:
             data = response.json()["data"]
+
             st.session_state.document_id = data["document_id"]
             st.session_state.current_filename = data["filename"]
 
             st.success("Document indexed successfully")
-
-            st.markdown(
-                f"""
-                <div class="metric-card">
-                <b>📄 {data["filename"]}</b><br>
-                <span class="small-muted">Status: {data.get("status")}</span><br>
-                <span class="small-muted">Chunks: {data.get("chunk_count")}</span><br>
-                <span class="small-muted">Vectors: {data.get("vector_count")}</span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            st.markdown(f"**File:** {data['filename']}")
+            st.markdown(f"**Status:** `{data.get('status')}`")
+            st.markdown(f"**Chunks:** `{data.get('chunk_count')}`")
+            st.markdown(f"**Vectors:** `{data.get('vector_count')}`")
         else:
             st.error("Upload failed")
             st.write(response.text)
@@ -132,7 +123,12 @@ with st.sidebar:
         st.rerun()
 
 
+st.title("🤖 AIOS Enterprise")
+st.caption("Production-style AI Knowledge Assistant with Hybrid Retrieval + Source Grounding")
+
+
 left, right = st.columns([0.72, 0.28])
+
 
 with left:
     st.markdown("## 💬 Conversation")
@@ -142,10 +138,36 @@ with left:
 
     for message in st.session_state.messages:
         avatar = "👤" if message["role"] == "user" else "🤖"
+
         with st.chat_message(message["role"], avatar=avatar):
             st.markdown(message["content"])
 
+            if message["role"] == "assistant" and message.get("sources"):
+                with st.expander("📚 Sources"):
+                    for source in message["sources"]:
+                        score = source.get("score")
+                        semantic_score = source.get("semantic_score")
+                        keyword_score = source.get("keyword_score")
+                        page_number = source.get("page_number")
+
+                        st.markdown(
+                            f"""
+                            <div class="source-card">
+                            <h4>📌 Source {source["source_number"]}</h4>
+                            <p><b>📖 Page:</b> {page_number if page_number else "N/A"}</p>
+                            <p><b>🧩 Chunk:</b> {source.get("chunk_index")}</p>
+                            <p><b>⭐ Relevance:</b> {relevance_percent(score)}%</p>
+                            <p><b>Semantic:</b> {round(semantic_score or 0, 3)}
+                            &nbsp;&nbsp; <b>Keyword:</b> {round(keyword_score or 0, 3)}</p>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
+
+                        st.info(source.get("preview", ""))
+
     prompt = st.chat_input("Ask anything about your uploaded document...")
+
 
 with right:
     st.markdown("## 📌 Active Document")
@@ -157,12 +179,21 @@ with right:
         st.warning("No document selected.")
 
     st.markdown("---")
+
     st.markdown("### 🧠 Capabilities")
     st.markdown("- PDF ingestion")
     st.markdown("- Hybrid retrieval")
     st.markdown("- Source citations")
     st.markdown("- Conversation memory")
     st.markdown("- Local LLM inference")
+
+    st.markdown("---")
+
+    st.markdown("### ⚙️ Stack")
+    st.markdown("**Backend:** FastAPI")
+    st.markdown("**Frontend:** Streamlit")
+    st.markdown("**LLM:** Llama 3.2 via Ollama")
+    st.markdown("**Search:** FAISS + BM25")
 
 
 if prompt:
@@ -195,14 +226,20 @@ if prompt:
 
         if response.status_code == 200:
             result = response.json()["data"]
-            answer = result["answer"]
-            sources = result.get("sources", [])
+
+            assistant_message = {
+                "role": "assistant",
+                "content": result["answer"],
+                "sources": result.get("sources", []),
+            }
+
+            st.session_state.messages.append(assistant_message)
 
             with st.chat_message("assistant", avatar="🤖"):
-                st.markdown(answer)
+                st.markdown(result["answer"])
 
-                with st.expander("📚 View Sources"):
-                    for source in sources:
+                with st.expander("📚 Sources"):
+                    for source in result.get("sources", []):
                         score = source.get("score")
                         semantic_score = source.get("semantic_score")
                         keyword_score = source.get("keyword_score")
@@ -223,13 +260,6 @@ if prompt:
                         )
 
                         st.info(source.get("preview", ""))
-
-            st.session_state.messages.append(
-                {
-                    "role": "assistant",
-                    "content": answer,
-                }
-            )
         else:
             st.error("Backend error")
             st.write(response.status_code)
