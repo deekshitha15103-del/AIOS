@@ -29,16 +29,24 @@ def is_low_quality_chunk(text: str) -> bool:
     if any(keyword in lowered for keyword in BAD_CHUNK_KEYWORDS):
         return True
 
-    question_marks = lowered.count("?")
-    word_count = len(lowered.split())
-
-    if question_marks >= 2 and word_count < 120:
+    if lowered.count("?") >= 2 and len(lowered.split()) < 120:
         return True
 
     if re.fullmatch(r"[\d\s\W]+", lowered):
         return True
 
     return False
+
+
+def extract_page_number(text: str) -> int | None:
+    match = re.search(r"===== PAGE (\d+) =====", text)
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def remove_page_marker(text: str) -> str:
+    return re.sub(r"===== PAGE \d+ =====", "", text).strip()
 
 
 def split_large_text(text: str) -> list[str]:
@@ -96,27 +104,65 @@ def create_chunks(document: dict) -> dict:
     paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
 
     raw_chunks = []
+    current_page_number = None
 
     for paragraph in paragraphs:
-        if paragraph.startswith("--- Page") and paragraph.endswith("---"):
+        page_number = extract_page_number(paragraph)
+
+        if page_number is not None:
+            current_page_number = page_number
+            paragraph = remove_page_marker(paragraph)
+
+        if not paragraph:
             continue
 
         if len(paragraph) > MAX_CHUNK_CHARACTERS:
-            raw_chunks.extend(split_large_text(paragraph))
+            for piece in split_large_text(paragraph):
+                raw_chunks.append(
+                    {
+                        "text": piece,
+                        "page_number": current_page_number,
+                    }
+                )
         else:
-            raw_chunks.append(paragraph)
+            raw_chunks.append(
+                {
+                    "text": paragraph,
+                    "page_number": current_page_number,
+                }
+            )
 
-    raw_chunks = merge_small_chunks(raw_chunks)
-    raw_chunks = [chunk for chunk in raw_chunks if not is_low_quality_chunk(chunk)]
+    raw_text_chunks = [chunk["text"] for chunk in raw_chunks]
+    merged_text_chunks = merge_small_chunks(raw_text_chunks)
+
+    final_chunks = []
+    for merged_text in merged_text_chunks:
+        matched_page_number = None
+
+        for original_chunk in raw_chunks:
+            if original_chunk["text"] and original_chunk["text"] in merged_text:
+                matched_page_number = original_chunk["page_number"]
+                break
+
+        if not is_low_quality_chunk(merged_text):
+            final_chunks.append(
+                {
+                    "text": merged_text,
+                    "page_number": matched_page_number,
+                }
+            )
 
     chunk_records = []
     created_at = datetime.now(timezone.utc)
 
-    for index, chunk_text in enumerate(raw_chunks):
+    for index, chunk_data in enumerate(final_chunks):
+        chunk_text = chunk_data["text"]
+
         chunk = Chunk(
             chunk_id=str(uuid4()),
             document_id=document["document_id"],
             chunk_index=index,
+            page_number=chunk_data["page_number"],
             text=chunk_text,
             character_count=len(chunk_text),
             word_count=len(chunk_text.split()),
