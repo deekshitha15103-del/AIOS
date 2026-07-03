@@ -13,6 +13,13 @@ class DocumentSearchRequest(BaseModel):
 
 
 class AskRequest(BaseModel):
+    session_id: str
     document_id: str
     question: str
     top_k: int = 3
+
+
+class AskAllRequest(BaseModel):
+    session_id: str
+    question: str
+    top_k: int = 5
