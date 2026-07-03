@@ -1,0 +1,11 @@
+services:
+  aios-backend:
+    build: .
+    container_name: aios-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - HF_HUB_OFFLINE=1
+      - TRANSFORMERS_OFFLINE=1
