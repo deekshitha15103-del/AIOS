@@ -18,8 +18,39 @@ def relevance_percent(score):
     return max(0, min(100, int(score * 100)))
 
 
-st.title("🤖 AIOS")
-st.caption("Enterprise AI Knowledge Assistant")
+st.markdown(
+    """
+    <style>
+    .block-container {
+        padding-top: 2rem;
+    }
+    .metric-card {
+        background-color: #111827;
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid #374151;
+        margin-bottom: 12px;
+    }
+    .source-card {
+        background-color: #0f172a;
+        padding: 18px;
+        border-radius: 14px;
+        border: 1px solid #334155;
+        margin-bottom: 16px;
+    }
+    .small-muted {
+        color: #9ca3af;
+        font-size: 0.9rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+st.title("🤖 AIOS Enterprise")
+st.caption("Production-style AI Knowledge Assistant with Hybrid Retrieval + Source Grounding")
+
 
 if "session_id" not in st.session_state:
     st.session_state.session_id = "streamlit-session"
@@ -35,12 +66,18 @@ if "messages" not in st.session_state:
 
 
 with st.sidebar:
-    st.header("📄 Documents")
+    st.header("📁 Workspace")
 
-    uploaded = st.file_uploader("Upload PDF", type=["pdf"])
+    st.markdown("### 📄 Upload Document")
+
+    uploaded = st.file_uploader(
+        "Upload PDF",
+        type=["pdf"],
+        label_visibility="collapsed",
+    )
 
     if uploaded:
-        with st.spinner("Processing document..."):
+        with st.spinner("Indexing document..."):
             files = {
                 "file": (
                     uploaded.name,
@@ -57,46 +94,76 @@ with st.sidebar:
 
         if response.status_code == 200:
             data = response.json()["data"]
-
             st.session_state.document_id = data["document_id"]
             st.session_state.current_filename = data["filename"]
 
-            st.success("Uploaded & indexed")
-            st.markdown(f"**Filename:** {data['filename']}")
-            st.markdown(f"**Status:** `{data.get('status')}`")
-            st.markdown(f"**Chunks:** `{data.get('chunk_count')}`")
-            st.markdown(f"**Vectors:** `{data.get('vector_count')}`")
+            st.success("Document indexed successfully")
+
+            st.markdown(
+                f"""
+                <div class="metric-card">
+                <b>📄 {data["filename"]}</b><br>
+                <span class="small-muted">Status: {data.get("status")}</span><br>
+                <span class="small-muted">Chunks: {data.get("chunk_count")}</span><br>
+                <span class="small-muted">Vectors: {data.get("vector_count")}</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         else:
             st.error("Upload failed")
             st.write(response.text)
 
     st.divider()
 
-    st.subheader("Active Document")
+    st.markdown("### ⚙️ System")
+    st.markdown("**Model:** Llama 3.2")
+    st.markdown("**Retriever:** FAISS + BM25")
+    st.markdown("**Backend:** FastAPI")
+    st.markdown("**Frontend:** Streamlit")
+
+    st.divider()
+
+    st.markdown("### 💬 Session")
+    st.code(st.session_state.session_id)
+
+    if st.button("Clear Chat", use_container_width=True):
+        st.session_state.messages = []
+        st.rerun()
+
+
+left, right = st.columns([0.72, 0.28])
+
+with left:
+    st.markdown("## 💬 Conversation")
+
+    if not st.session_state.document_id:
+        st.info("Upload a PDF from the sidebar to start asking questions.")
+
+    for message in st.session_state.messages:
+        avatar = "👤" if message["role"] == "user" else "🤖"
+        with st.chat_message(message["role"], avatar=avatar):
+            st.markdown(message["content"])
+
+    prompt = st.chat_input("Ask anything about your uploaded document...")
+
+with right:
+    st.markdown("## 📌 Active Document")
 
     if st.session_state.document_id:
         st.markdown(f"**File:** {st.session_state.current_filename}")
         st.caption(st.session_state.document_id)
     else:
-        st.info("No document uploaded yet.")
+        st.warning("No document selected.")
 
-    st.divider()
+    st.markdown("---")
+    st.markdown("### 🧠 Capabilities")
+    st.markdown("- PDF ingestion")
+    st.markdown("- Hybrid retrieval")
+    st.markdown("- Source citations")
+    st.markdown("- Conversation memory")
+    st.markdown("- Local LLM inference")
 
-    st.subheader("Current Session")
-    st.code(st.session_state.session_id)
-
-    if st.button("Clear Chat"):
-        st.session_state.messages = []
-        st.rerun()
-
-
-st.markdown("### 💬 Chat")
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-prompt = st.chat_input("Ask anything about your uploaded document...")
 
 if prompt:
     if not st.session_state.document_id:
@@ -109,7 +176,7 @@ if prompt:
             }
         )
 
-        with st.chat_message("user"):
+        with st.chat_message("user", avatar="👤"):
             st.markdown(prompt)
 
         body = {
@@ -119,7 +186,7 @@ if prompt:
             "top_k": 3,
         }
 
-        with st.spinner("AIOS is thinking..."):
+        with st.spinner("AIOS is retrieving context and generating an answer..."):
             response = requests.post(
                 f"{API}/knowledge/ask",
                 json=body,
@@ -129,47 +196,32 @@ if prompt:
         if response.status_code == 200:
             result = response.json()["data"]
             answer = result["answer"]
+            sources = result.get("sources", [])
 
-            with st.chat_message("assistant"):
+            with st.chat_message("assistant", avatar="🤖"):
                 st.markdown(answer)
 
-                with st.expander("📚 Sources & Citations"):
-                    for source in result.get("sources", []):
+                with st.expander("📚 View Sources"):
+                    for source in sources:
                         score = source.get("score")
                         semantic_score = source.get("semantic_score")
                         keyword_score = source.get("keyword_score")
                         page_number = source.get("page_number")
 
-                        st.markdown("---")
-                        st.markdown(f"### 📌 Source {source['source_number']}")
+                        st.markdown(
+                            f"""
+                            <div class="source-card">
+                            <h4>📌 Source {source["source_number"]}</h4>
+                            <p><b>📖 Page:</b> {page_number if page_number else "N/A"}</p>
+                            <p><b>🧩 Chunk:</b> {source.get("chunk_index")}</p>
+                            <p><b>⭐ Relevance:</b> {relevance_percent(score)}%</p>
+                            <p><b>Semantic:</b> {round(semantic_score or 0, 3)}
+                            &nbsp;&nbsp; <b>Keyword:</b> {round(keyword_score or 0, 3)}</p>
+                            </div>
+                            """,
+                            unsafe_allow_html=True,
+                        )
 
-                        col1, col2, col3 = st.columns(3)
-
-                        with col1:
-                            st.metric(
-                                "Relevance",
-                                f"{relevance_percent(score)}%",
-                            )
-
-                        with col2:
-                            st.metric(
-                                "Chunk",
-                                source.get("chunk_index"),
-                            )
-
-                        with col3:
-                            st.metric(
-                                "Page",
-                                page_number if page_number else "N/A",
-                            )
-
-                        if semantic_score is not None or keyword_score is not None:
-                            st.caption(
-                                f"Semantic: {round(semantic_score or 0, 3)} | "
-                                f"Keyword: {round(keyword_score or 0, 3)}"
-                            )
-
-                        st.markdown("**Preview**")
                         st.info(source.get("preview", ""))
 
             st.session_state.messages.append(
