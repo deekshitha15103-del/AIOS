@@ -1,23 +1,43 @@
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
+*$py.class
+*.so
 
-# Virtual environment
+# Virtual environments
 venv/
-.env
+.venv/
+env/
+ENV/
 
-# Data
-data/documents/
-data/sessions/
+# Environment variables
+.env
+.env.*
+!.env.example
 
 # IDE
 .vscode/
 .idea/
 
-# OS
+# Operating system
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Python caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Build files
+build/
+dist/
+*.egg-info/
 
 # Logs
 *.log
@@ -25,8 +45,31 @@ Thumbs.db
 # Streamlit
 .streamlit/
 
-# Docker
-*.tar
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
 
-# Git
-.git/
+# Local project data
+data/uploads/
+data/documents/
+data/*.db
+
+# Model cache
+models/
+cache/
+.huggingface/
+.hf/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Docker
+*.pid
