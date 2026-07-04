@@ -9,7 +9,8 @@ Enterprise-Inspired Retrieval-Augmented Generation (RAG) Assistant
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit)
 ![FAISS](https://img.shields.io/badge/FAISS-Vector_Search-blue)
 ![BM25](https://img.shields.io/badge/BM25-Hybrid_Retrieval-orange)
-![Ollama](https://img.shields.io/badge/Ollama-Llama_3.2-black)
+![Ollama](https://img.shields.io/badge/Ollama-Local_LLM-black)
+![OpenAI Compatible](https://img.shields.io/badge/Hosted_LLM-OpenAI_Compatible-6A5ACD)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 AIOS: A Local, Hybrid RAG Application
@@ -23,7 +24,7 @@ Smart Ingestion: Automatically parses, cleans, and chunks uploaded PDFs.
 
 Hybrid Retrieval: Fuses semantic search (FAISS + Sentence Transformers) with traditional keyword search (BM25) to make sure the LLM actually gets the right context.
 
-100% Local Inference: Runs entirely on your machine using Ollama (Llama 3.2)—no data leaves your local environment, and no API keys are required.
+Flexible LLM Backend: AIOS supports both local inference with Ollama (Llama 3.2) and cloud-hosted OpenAI-compatible providers through environment variables, allowing the same retrieval pipeline to run locally or in production.
 
 Citational Grounding: Responses aren't just generated out of thin air; the app explicitly surfaces the source chunks used to build the answer.
 
@@ -48,14 +49,14 @@ The data pipeline follows a classic modular architecture:
                                     [Hybrid Rank Fusion]
                                                │
                                                ▼
-                             [Top-K Context + Llama 3.2 via Ollama] ➔ [Grounded Response]
+                             [Top-K Context + Configurable LLM Backend] ➔ [Grounded Response]
 Ingestion & Processing: The PDF is stripped to raw text via PyPDF, cleaned of formatting artifacts, and broken into overlapping chunks to preserve context at the boundaries.
 
 Dual-Indexing: Chunks are simultaneously vectorized using all-MiniLM-L6-v2 for the FAISS vector store and tokenized for the BM25 keyword index.
 
 Query & Fusion: When you ask a question, AIOS hits both indexes. Semantic search catches the conceptual meaning, while BM25 catches exact IDs, names, or specific terminology. The results are merged to pull the absolute best reference text.
 
-Generation: The final context window is structured and sent to Llama 3.2, yielding a response tied directly to your document.
+Generation: The final context window is structured and sent to the configured language model. Local development uses Ollama, while cloud deployments can use a hosted OpenAI-compatible provider without changing the retrieval pipeline.
 
  Tech Stack
 Core: Python 3.11
@@ -64,7 +65,10 @@ API & Backend: FastAPI (REST)
 
 UI Frontend: Streamlit
 
-Local LLM Orchestration: Ollama (Llama 3.2)
+LLM Support:
+
+- Ollama (Llama 3.2) for local development
+- OpenAI-compatible hosted providers for cloud deployment
 
 Vector Embeddings: Sentence Transformers (all-MiniLM-L6-v2)
 
@@ -73,6 +77,30 @@ Vector Database: FAISS
 Keyword Search: BM25
 
 Deployment: Docker / Docker Compose
+
+
+Configuration
+
+AIOS supports multiple language model providers.
+
+Local Development
+
+```env
+LLM_PROVIDER=ollama
+OLLAMA_URL=http://localhost:11434/api/generate
+OLLAMA_MODEL=llama3.2
+```
+
+Cloud Deployment
+
+```env
+LLM_PROVIDER=openai
+OPENAI_API_KEY=your_api_key
+OPENAI_MODEL=gpt-4o-mini
+```
+
+The retrieval pipeline remains identical in both modes. Only the language model backend changes.
+
 
 Project Structure
 Plaintext
@@ -119,10 +147,10 @@ pip install -r requirements.txt
 Make sure you have Ollama installed on your system, then pull the model weights and start the engine:
 
 Bash
-# Pull Llama 3.2
+Pull Llama 3.2
 ollama pull llama3.2
 
-# Fire up the local server
+Fire up the local server
 ollama serve
 4. Run the App
 If you are on Windows, you can use the automation script to launch everything at once:
@@ -142,13 +170,13 @@ streamlit run frontend/app.py
 Once up, open your browser to the local Streamlit address (usually http://localhost:8501), drop in a document, and start testing the retrieval performance!
 
 **Screenshots**
-# Application Preview
+Application Preview
 
 The following screenshots demonstrate the complete AIOS workflow, from document ingestion to question answering and API documentation.
 
 ---
 
-## 1. Home Dashboard
+1. Home Dashboard
 
 The main landing page of AIOS where users can upload PDF documents and begin interacting with the assistant.
 
@@ -156,7 +184,7 @@ The main landing page of AIOS where users can upload PDF documents and begin int
 
 ---
 
-## 2. Document Upload
+2. Document Upload
 
 Uploading a PDF automatically triggers the ingestion pipeline, including text extraction, chunking, embedding generation, and indexing.
 
@@ -164,7 +192,7 @@ Uploading a PDF automatically triggers the ingestion pipeline, including text ex
 
 ---
 
-## 3. Chat Interface
+3. Chat Interface
 
 Users can ask questions in natural language and receive grounded responses generated from the uploaded documents.
 
@@ -172,7 +200,7 @@ Users can ask questions in natural language and receive grounded responses gener
 
 ---
 
-## 4. Source Citations
+4. Source Citations
 
 Every response includes supporting document chunks, allowing users to verify exactly where the generated answer originated.
 
@@ -180,7 +208,7 @@ Every response includes supporting document chunks, allowing users to verify exa
 
 ---
 
-## 5. Expanded Source Details
+5. Expanded Source Details
 
 Each retrieved source can be expanded to inspect the chunk content and better understand why it contributed to the final answer.
 
@@ -188,7 +216,7 @@ Each retrieved source can be expanded to inspect the chunk content and better un
 
 ---
 
-## 6. FastAPI Swagger UI
+6. FastAPI Swagger UI
 
 AIOS exposes a REST API using FastAPI. The interactive Swagger documentation provides a simple way to explore every endpoint.
 
@@ -196,7 +224,7 @@ AIOS exposes a REST API using FastAPI. The interactive Swagger documentation pro
 
 ---
 
-## 7. Upload Endpoint
+7. Upload Endpoint
 
 Detailed view of the document upload endpoint, including request parameters and expected responses.
 
@@ -204,7 +232,7 @@ Detailed view of the document upload endpoint, including request parameters and 
 
 ---
 
-## 8. Question Answering Endpoint
+8. Question Answering Endpoint
 
 Swagger documentation for the question-answering endpoint used by the Streamlit frontend.
 
@@ -212,20 +240,20 @@ Swagger documentation for the question-answering endpoint used by the Streamlit 
 
 ---
 
-## 9. API Request Example
+9. API Request Example
 
 Example request payload for querying AIOS through the REST API.
 
 ![API Request Example](assets/screenshots/09-swagger-request-example.png)
 
-## Demo
+Demo
 
 A short walkthrough of AIOS is available below.
 
 > Demo video coming soon.
 
 Using the App
-Once your backend, frontend, and Ollama are up and running, head over to the Streamlit local URL in your browser. The loop is straightforward:
+Once your backend, frontend, and configured LLM provider are running (Ollama locally or a hosted provider in production), head over to the Streamlit local URL in your browser. The loop is straightforward:
 
 Drop your PDF into the upload zone.
 
@@ -293,7 +321,7 @@ JSON
   "success": true,
   "message": "Answer generated successfully",
   "data": {
-    "answer": "The project specifies a strict local runtime using Python 3.11 and Ollama for isolated model execution.",
+    "answer": "The project uses Python 3.11 with a configurable LLM backend and a hybrid retrieval pipeline for grounded responses.",
     "sources": [
       {
         "chunk_index": 14,
@@ -321,7 +349,7 @@ FAISS: A highly efficient vector similarity library that delivers lightning-fast
 
 BM25: Vector math can easily look past specific identifiers, alpha-numeric serial numbers, proper nouns, or exact terminology. BM25 acts as a deterministic keyword safety net, catching the exact phrases that vector embeddings might compress away.
 
-Ollama (Llama 3.2): Keeping inference local guarantees absolute data privacy, removes network latency bottlenecks, eliminates unpredictable commercial API costs, and lets the entire system run completely offline.
+Configurable LLM Layer: AIOS separates retrieval from text generation. Local development uses Ollama, while production deployments can switch to a hosted OpenAI-compatible provider using environment variables without changing the application logic.
 
 Performance & Constraints
 Operational Trade-offs
@@ -336,7 +364,7 @@ File storage and processing are optimized strictly for native text-based PDFs.
 
 Authentication layers are omitted in favor of local-host deployment execution.
 
-## Project Status
+Project Status
 
 AIOS is currently under active development.
 
@@ -344,7 +372,7 @@ Current capabilities include:
 
 - Hybrid Retrieval (FAISS + BM25)
 - PDF ingestion
-- Local LLM inference with Ollama
+- Configurable LLM backend (Ollama locally / hosted provider in production)
 - Source-grounded responses
 - Session-based conversation memory
 - FastAPI REST API
@@ -404,7 +432,9 @@ FastAPI & Streamlit — For making the Python web ecosystem incredibly productiv
 
 FAISS & Sentence Transformers — For democratic access to elite-tier vector search tooling.
 
-Ollama — For changing the game with local LLM deployment.
+Ollama — For enabling efficient local LLM development.
+
+OpenAI-compatible APIs — For enabling cloud deployment using the same application architecture.
 
 ____
 

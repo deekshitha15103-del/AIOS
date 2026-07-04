@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-multipart
+pydantic
+python-dotenv
+pypdf
+faiss-cpu
+rank-bm25
+numpy
+requests
