@@ -54,13 +54,14 @@ def search_document(document_dir: str, query: str, top_k: int = 3):
         score = cosine_similarity(query_vector, embedding["vector"])
 
         results.append(
-            {
-                "chunk_id": chunk_id,
-                "document_id": embedding.get("document_id"),
-                "score": score,
-                "text": chunk.get("text", ""),
-            }
-        )
+    {
+        "chunk_id": chunk_id,
+        "chunk_index": chunk.get("chunk_index", chunk_id),
+        "document_id": embedding.get("document_id"),
+        "score": score,
+        "text": chunk.get("text", ""),
+    }
+)
 
     results.sort(key=lambda item: item["score"], reverse=True)
 
