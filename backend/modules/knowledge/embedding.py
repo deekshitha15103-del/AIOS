@@ -40,9 +40,28 @@ def generate_local_embeddings(texts: list[str]) -> tuple[list[list[float]], str]
     return vectors, LOCAL_MODEL_NAME
 
 
+def generate_fallback_embeddings(texts: list[str]) -> tuple[list[list[float]], str]:
+    vectors = []
+
+    for text in texts:
+        values = [0.0] * 384
+
+        for index, char in enumerate(text[:3000]):
+            values[index % 384] += (ord(char) % 97) / 97.0
+
+        norm = sum(value * value for value in values) ** 0.5
+
+        if norm > 0:
+            values = [value / norm for value in values]
+
+        vectors.append(values)
+
+    return vectors, "fallback-hash-embedding"
+
+
 def generate_openai_embeddings(texts: list[str]) -> tuple[list[list[float]], str]:
     if not OPENAI_API_KEY:
-        raise RuntimeError("OPENAI_API_KEY is not configured.")
+        return generate_fallback_embeddings(texts)
 
     payload = {
         "model": OPENAI_EMBEDDING_MODEL,
@@ -59,12 +78,15 @@ def generate_openai_embeddings(texts: list[str]) -> tuple[list[list[float]], str
         method="POST",
     )
 
-    with urllib.request.urlopen(request, timeout=300) as response:
-        result = json.loads(response.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(request, timeout=300) as response:
+            result = json.loads(response.read().decode("utf-8"))
 
-    vectors = [item["embedding"] for item in result["data"]]
+        vectors = [item["embedding"] for item in result["data"]]
+        return vectors, OPENAI_EMBEDDING_MODEL
 
-    return vectors, OPENAI_EMBEDDING_MODEL
+    except Exception:
+        return generate_fallback_embeddings(texts)
 
 
 def generate_vectors(texts: list[str]) -> tuple[list[list[float]], str]:
