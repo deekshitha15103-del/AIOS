@@ -1,4 +1,19 @@
+<p align="center">
+  <img src="assets/logo/aios_logo.png" alt="AIOS Logo" width="180">
+</p>
+
+Enterprise-Inspired Retrieval-Augmented Generation (RAG) Assistant
+
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit)
+![FAISS](https://img.shields.io/badge/FAISS-Vector_Search-blue)
+![BM25](https://img.shields.io/badge/BM25-Hybrid_Retrieval-orange)
+![Ollama](https://img.shields.io/badge/Ollama-Llama_3.2-black)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 AIOS: A Local, Hybrid RAG Application
+
 I built AIOS to get my hands dirty with the actual engineering side of production AI applications, moving past simple API wrappers. It’s a local, enterprise-grade Retrieval-Augmented Generation (RAG) system that lets you drop in PDFs and have grounded, natural language conversations with your data.
 
 Instead of just tossing text at an LLM, this project focuses heavily on the mechanics of ingestion, chunking strategies, and balancing semantic depth with exact keyword matching using a custom hybrid retrieval pipeline.
@@ -125,6 +140,90 @@ Tab 2 (Frontend):
 Bash
 streamlit run frontend/app.py
 Once up, open your browser to the local Streamlit address (usually http://localhost:8501), drop in a document, and start testing the retrieval performance!
+
+**Screenshots**
+# Application Preview
+
+The following screenshots demonstrate the complete AIOS workflow, from document ingestion to question answering and API documentation.
+
+---
+
+## 1. Home Dashboard
+
+The main landing page of AIOS where users can upload PDF documents and begin interacting with the assistant.
+
+![Home Dashboard](assets/screenshots/01-home-dashboard.png)
+
+---
+
+## 2. Document Upload
+
+Uploading a PDF automatically triggers the ingestion pipeline, including text extraction, chunking, embedding generation, and indexing.
+
+![Document Upload](assets/screenshots/02-document-upload.png)
+
+---
+
+## 3. Chat Interface
+
+Users can ask questions in natural language and receive grounded responses generated from the uploaded documents.
+
+![Chat Interface](assets/screenshots/03-chat-interface.png)
+
+---
+
+## 4. Source Citations
+
+Every response includes supporting document chunks, allowing users to verify exactly where the generated answer originated.
+
+![Source Citations](assets/screenshots/04-source-citations-overview.png)
+
+---
+
+## 5. Expanded Source Details
+
+Each retrieved source can be expanded to inspect the chunk content and better understand why it contributed to the final answer.
+
+![Expanded Source Details](assets/screenshots/05-source-citations-expanded.png)
+
+---
+
+## 6. FastAPI Swagger UI
+
+AIOS exposes a REST API using FastAPI. The interactive Swagger documentation provides a simple way to explore every endpoint.
+
+![Swagger UI](assets/screenshots/06-swagger-upload-endpoint.png)
+
+---
+
+## 7. Upload Endpoint
+
+Detailed view of the document upload endpoint, including request parameters and expected responses.
+
+![Upload Endpoint](assets/screenshots/07-swagger-upload-expanded-endpoint.png)
+
+---
+
+## 8. Question Answering Endpoint
+
+Swagger documentation for the question-answering endpoint used by the Streamlit frontend.
+
+![Question Answering Endpoint](assets/screenshots/08-swagger-ask-endpoint.png)
+
+---
+
+## 9. API Request Example
+
+Example request payload for querying AIOS through the REST API.
+
+![API Request Example](assets/screenshots/09-swagger-request-example.png)
+
+## Demo
+
+A short walkthrough of AIOS is available below.
+
+> Demo video coming soon.
+
 Using the App
 Once your backend, frontend, and Ollama are up and running, head over to the Streamlit local URL in your browser. The loop is straightforward:
 
@@ -237,7 +336,22 @@ File storage and processing are optimized strictly for native text-based PDFs.
 
 Authentication layers are omitted in favor of local-host deployment execution.
 
+## Project Status
+
+AIOS is currently under active development.
+
+Current capabilities include:
+
+- Hybrid Retrieval (FAISS + BM25)
+- PDF ingestion
+- Local LLM inference with Ollama
+- Source-grounded responses
+- Session-based conversation memory
+- FastAPI REST API
+- Streamlit frontend
+
  Roadmap & Next Horizons
+
 To take AIOS from a high-performance local pipeline to a production-ready enterprise cluster, future development is focused on:
 
 [ ] Infrastructure Scaling: Migrating session states to Redis caches and scaling document metadata management into a robust PostgreSQL layer.
@@ -269,14 +383,19 @@ Open a detailed Pull Request.
  License
 Distributed under the MIT License. See LICENSE for more information.
 
- Author
-S.R. Deekshitha
+ ## Author
 
-B.Tech in Computer Science Engineering (Artificial Intelligence & Machine Learning)
+**S.R. Deekshitha**
 
-Interests: Information Retrieval, Retrieval-Augmented Generation (RAG), Natural Language Processing, and Modular Backend Engineering.
+B.Tech – Computer Science Engineering (Artificial Intelligence & Machine Learning)
 
-GitHub: deekshitha15103-del
+I'm passionate about building practical AI systems with a focus on Retrieval-Augmented Generation (RAG), Information Retrieval, Natural Language Processing, and scalable backend development.
+
+GitHub:
+https://github.com/deekshitha15103-del
+
+LinkedIn:
+https://www.linkedin.com/in/deekshitha-s-r-31bb24289
 
  Acknowledgements
 AIOS stands on the shoulders of the incredible open-source AI and backend communities. Major thanks to the contributors behind:
@@ -286,3 +405,9 @@ FastAPI & Streamlit — For making the Python web ecosystem incredibly productiv
 FAISS & Sentence Transformers — For democratic access to elite-tier vector search tooling.
 
 Ollama — For changing the game with local LLM deployment.
+
+____
+
+If you found this project interesting, consider giving it a ⭐ on GitHub.
+
+Feedback, suggestions, and contributions are always welcome.
