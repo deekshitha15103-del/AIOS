@@ -13,6 +13,14 @@ Enterprise-Inspired Retrieval-Augmented Generation (RAG) Assistant
 ![OpenAI Compatible](https://img.shields.io/badge/Hosted_LLM-OpenAI_Compatible-6A5ACD)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+ **Live Demo**
+
+ **Frontend:** https://lwcx6yd82raq7jcc3dzphg.streamlit.app/
+
+**Backend API:** https://aios-1.onrender.com
+
+**API Docs (Swagger):** https://aios-1.onrender.com/docs
+
 AIOS: A Local, Hybrid RAG Application
 
 I built AIOS to get my hands dirty with the actual engineering side of production AI applications, moving past simple API wrappers. It’s a local, enterprise-grade Retrieval-Augmented Generation (RAG) system that lets you drop in PDFs and have grounded, natural language conversations with your data.
