@@ -79,6 +79,14 @@ Keyword Search: BM25
 Deployment: Docker / Docker Compose
 
 
+Live Demo
+
+**Backend API:** https://aios-1.onrender.com
+
+**API Documentation:** https://aios-1.onrender.com/docs
+
+> Streamlit frontend deployment coming soon.
+
 Configuration
 
 AIOS supports multiple language model providers.
@@ -97,6 +105,8 @@ Cloud Deployment
 LLM_PROVIDER=openai
 OPENAI_API_KEY=your_api_key
 OPENAI_MODEL=gpt-4o-mini
+EMBEDDING_PROVIDER=openai
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 ```
 
 The retrieval pipeline remains identical in both modes. Only the language model backend changes.
