@@ -2,7 +2,7 @@ import requests
 import streamlit as st
 
 
-API = "http://127.0.0.1:8000/api/v1"
+API = "https://aios-1.onrender.com/api/v1"
 
 
 st.set_page_config(
