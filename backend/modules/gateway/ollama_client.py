@@ -1,9 +1,17 @@
 import json
+import os
 import urllib.request
 
 
-OLLAMA_URL = "http://host.docker.internal:11434/api/generate"
-MODEL_NAME = "llama3.2"
+OLLAMA_URL = os.getenv(
+    "OLLAMA_URL",
+    "http://localhost:11434/api/generate",
+)
+
+MODEL_NAME = os.getenv(
+    "OLLAMA_MODEL",
+    "llama3.2",
+)
 
 
 def generate_answer(prompt: str) -> str:
