@@ -51,9 +51,17 @@ def generate_ollama_answer(prompt: str) -> str:
     return result["response"]
 
 
+def generate_fallback_answer(prompt: str) -> str:
+    return (
+        "The document was uploaded and relevant context was retrieved successfully. "
+        "However, the hosted LLM provider is currently unavailable due to API quota or rate limits. "
+        "Please try again later, or run AIOS locally with Ollama for full answer generation."
+    )
+
+
 def generate_openai_answer(prompt: str) -> str:
     if not OPENAI_API_KEY:
-        return "LLM API key is not configured."
+        return generate_fallback_answer(prompt)
 
     payload = {
         "model": OPENAI_MODEL,
@@ -81,10 +89,14 @@ def generate_openai_answer(prompt: str) -> str:
         method="POST",
     )
 
-    with urllib.request.urlopen(req, timeout=300) as response:
-        result = json.loads(response.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=300) as response:
+            result = json.loads(response.read().decode("utf-8"))
 
-    return result["choices"][0]["message"]["content"]
+        return result["choices"][0]["message"]["content"]
+
+    except Exception:
+        return generate_fallback_answer(prompt)
 
 
 def generate_stream(prompt: str):
