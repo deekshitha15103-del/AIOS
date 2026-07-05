@@ -17,7 +17,7 @@ Enterprise-Inspired Retrieval-Augmented Generation (RAG) Assistant
  
  **Frontend:** https://lwcx6yd82raq7jcc3dzphg.streamlit.app/
 
-**Backend API:** https://aios-1.onrender.com
+**Backend API:** https://aios-1.onrender.com/
 
 **API Docs (Swagger):** https://aios-1.onrender.com/docs
 
@@ -94,7 +94,6 @@ Live Demo
 
 **API Documentation:** https://aios-1.onrender.com/docs
 
-> Streamlit frontend deployment coming soon.
 
 Configuration
 
