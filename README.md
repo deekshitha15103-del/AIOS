@@ -13,13 +13,14 @@ Enterprise-Inspired Retrieval-Augmented Generation (RAG) Assistant
 ![OpenAI Compatible](https://img.shields.io/badge/Hosted_LLM-OpenAI_Compatible-6A5ACD)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
- **Live Demo**
-
+**Live Demo:** https://youtu.be/sjagSk5NxUI
+ 
  **Frontend:** https://lwcx6yd82raq7jcc3dzphg.streamlit.app/
 
 **Backend API:** https://aios-1.onrender.com
 
 **API Docs (Swagger):** https://aios-1.onrender.com/docs
+
 
 AIOS: A Local, Hybrid RAG Application
 
@@ -268,7 +269,7 @@ Demo
 
 A short walkthrough of AIOS is available below.
 
-> Demo video coming soon.
+> Demo video: https://youtu.be/sjagSk5NxUI
 
 Using the App
 Once your backend, frontend, and configured LLM provider are running (Ollama locally or a hosted provider in production), head over to the Streamlit local URL in your browser. The loop is straightforward:
